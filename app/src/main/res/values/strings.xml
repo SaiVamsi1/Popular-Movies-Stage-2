@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Popular Movies Stage 1</string>
+    <string name="sort_by">Sort By</string>
+    <string name="popular_menu">Popular Movies</string>
+    <string name="top_rated_menu">Top Rated Movies</string>
+    <string name="overview">Overview:</string>
+    <string name="rating">Rating</string>
+    <string name="releasedate">Release Date:</string>
+    <string name="contentdescription">Movie Poster</string>
+</resources>
