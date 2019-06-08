@@ -10,22 +10,22 @@ import java.util.List;
 
 public class FavMovieViewModel extends AndroidViewModel
 {
-    private FavMoviesRepository mRepository;
-    private LiveData<List<ModelMovieData>> mAllResults;
+    private final FavMoviesRepository MyMovieRepository;
+    private final LiveData<List<ModelMovieData>> AllResults;
 
     public FavMovieViewModel (Application application)
     {
         super(application);
-        mRepository = new FavMoviesRepository(application);
-        mAllResults = mRepository.getAllResults();
+        MyMovieRepository = new FavMoviesRepository(application);
+        AllResults = MyMovieRepository.getAllmovieResults();
     }
 
-     public LiveData<List<ModelMovieData>> getAllResults() { return mAllResults; }
+     public LiveData<List<ModelMovieData>> getAllResults() { return AllResults; }
      public ModelMovieData checkMovieInDatabase(String id)
     {
-        return mRepository.checkMovieInDatabase(id);
+        return MyMovieRepository.checkMovieInDatabase(id);
 
     }
-    public void insert(ModelMovieData result) { mRepository.insert(result); }
-    public void delete(ModelMovieData result) { mRepository.delete(result); }
+    public void insert(ModelMovieData result) { MyMovieRepository.insert(result); }
+    public void delete(ModelMovieData result) { MyMovieRepository.delete(result); }
 }

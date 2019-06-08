@@ -1,15 +1,13 @@
 package com.vamsi.popularmoviesstage1final;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -35,19 +33,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+
 public class MainActivity extends AppCompatActivity {
     private RecyclerView mainRecyclerView;
     private final String POPULAR_QUERY="popular";
 
-    List<ModelMovieData> results;
-    FavMovieViewModel favMovieViewModel;
-    GridLayoutManager gridLayoutManager;
+    private List<ModelMovieData> results;
+    private FavMovieViewModel favMovieViewModel;
+    private GridLayoutManager gridLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mainRecyclerView=findViewById(R.id.recycler_view);
+
 
         results=new ArrayList<>();
         gridLayoutManager=new GridLayoutManager(this,2);
@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         }
         else{
             Toast.makeText(this, "Sorry! There is No Internet Connection", Toast.LENGTH_LONG).show();
+            openFavorites();
         }
 
         RecyclerView.LayoutManager mainLayoutManager;
@@ -124,25 +125,23 @@ public class MainActivity extends AppCompatActivity {
 
     private void openFavorites() {
         setTitle("Favourite Movies");
-       favMovieViewModel.getAllResults().observe(this, new Observer<List<ModelMovieData>>() {
-           @Override
-           public void onChanged(@Nullable List<ModelMovieData> modelMovieData) {
-               results = modelMovieData;
-               Toast.makeText(MainActivity.this, modelMovieData.get(0).getTitle(), Toast.LENGTH_SHORT).show();
-               FavAdapter favAdapter = new FavAdapter(MainActivity.this, modelMovieData);
-               mainRecyclerView.setLayoutManager(gridLayoutManager);
-               mainRecyclerView.setAdapter(favAdapter);
-           }
+       favMovieViewModel.getAllResults().observe(this, modelMovieData -> {
+           results = modelMovieData;
+           FavAdapter favAdapter = new FavAdapter(MainActivity.this, modelMovieData);
+           mainRecyclerView.setLayoutManager(gridLayoutManager);
+           mainRecyclerView.setAdapter(favAdapter);
        });
 
     }
 
 
-    public class FavAdapter extends RecyclerView.Adapter<FavAdapter.ViewInformations>{
-        Context context;
-        List<ModelMovieData> lists;
+    public class FavAdapter extends RecyclerView.Adapter<FavAdapter.ViewInformations>
+    {
+        final Context context;
+        final List<ModelMovieData> lists;
 
-        public FavAdapter(Context context, List<ModelMovieData> lists) {
+
+        FavAdapter(Context context, List<ModelMovieData> lists) {
             this.context = context;
             this.lists = lists;
         }
@@ -154,9 +153,18 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onBindViewHolder(@NonNull FavAdapter.ViewInformations viewInformations, int i) {
-            Picasso.with(context).load(lists.get(i).getPosterpath()).into(viewInformations.imageView);
+        public void onBindViewHolder(@NonNull FavAdapter.ViewInformations viewInformations, int i)
+        {
+            Picasso.with(context).load("https://image.tmdb.org/t/p/w185"+lists.get(i).getPosterpath()).into(viewInformations.imageView);
+
+            viewInformations.itemView.setOnClickListener(view ->
+            {
+                Intent intent=new Intent(context,DetailActivity.class);
+                intent.putExtra("movie",lists.get(i));
+                context.startActivity(intent);
+            });
         }
+
 
         @Override
         public int getItemCount() {
@@ -164,10 +172,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public class ViewInformations extends RecyclerView.ViewHolder {
-            ImageView imageView;
-            public ViewInformations(@NonNull View itemView) {
+            final ImageView imageView;
+            ViewInformations(@NonNull View itemView) {
                 super(itemView);
                 imageView = itemView.findViewById(R.id.movie_main_image_view);
+
             }
         }
     }

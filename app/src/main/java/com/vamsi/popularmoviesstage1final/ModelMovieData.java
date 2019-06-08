@@ -4,6 +4,8 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.Serializable;
 
 @Entity
@@ -74,11 +76,12 @@ public class ModelMovieData implements Serializable
         this.voteCount = voteCount;
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(@NotNull String id) {
         this.id = id;
     }
 
@@ -95,8 +98,7 @@ public class ModelMovieData implements Serializable
     }
 
     public String getPosterpath() {
-        String POSTER_URL = "https://image.tmdb.org/t/p/w185";
-        return POSTER_URL +posterpath;
+        return posterpath;
     }
 
     public void setPosterpath(String posterpath) {

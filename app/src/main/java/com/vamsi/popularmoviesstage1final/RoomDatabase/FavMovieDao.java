@@ -6,7 +6,6 @@ import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 
-
 import com.vamsi.popularmoviesstage1final.ModelMovieData;
 
 import java.util.List;

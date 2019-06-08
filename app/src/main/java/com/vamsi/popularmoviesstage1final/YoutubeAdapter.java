@@ -14,15 +14,15 @@ import java.util.ArrayList;
 
 public class YoutubeAdapter extends RecyclerView.Adapter<YoutubeAdapter.VH> {
 
-    public static final String YOUTUBE_URL="https://www.youtube.com/watch?v=";
-    private ArrayList<YoutubeData> list = new ArrayList<YoutubeData>();
+    private static final String YOUTUBE_URL="https://www.youtube.com/watch?v=";
+    private final ArrayList<YoutubeData> list;
 
     public YoutubeAdapter(ArrayList<YoutubeData>list, Context context)
     {
         this.list=list;
         this.context=context;
     }
-    private Context context;
+    private final Context context;
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
@@ -41,8 +41,8 @@ public class YoutubeAdapter extends RecyclerView.Adapter<YoutubeAdapter.VH> {
 
     public class VH extends RecyclerView.ViewHolder implements View.OnClickListener
     {
-        TextView name;
-        public VH(View itemView)
+        final TextView name;
+        VH(View itemView)
         {
             super(itemView);
             name=itemView.findViewById(R.id.youtube_textView);

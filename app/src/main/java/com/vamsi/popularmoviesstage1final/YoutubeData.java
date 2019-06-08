@@ -2,7 +2,7 @@ package com.vamsi.popularmoviesstage1final;
 
 import java.io.Serializable;
 
-public class YoutubeData implements Serializable {
+class YoutubeData implements Serializable {
     private String name;
     private String key;
 

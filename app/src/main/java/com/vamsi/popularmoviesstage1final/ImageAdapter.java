@@ -44,7 +44,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder>
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i)
     {
         Picasso.with(context)
-                .load(movies[i].getPosterpath())
+                .load("https://image.tmdb.org/t/p/w185"+movies[i].getPosterpath())
                 .fit()
                 .placeholder(R.drawable.movie_icon)
                 .error(R.mipmap.ic_launcher_round)

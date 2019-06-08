@@ -2,7 +2,7 @@ package com.vamsi.popularmoviesstage1final;
 
 import java.io.Serializable;
 
-public class ReviewData implements Serializable {
+class ReviewData implements Serializable {
     private String author;
 
     public ReviewData(String author, String comment) {

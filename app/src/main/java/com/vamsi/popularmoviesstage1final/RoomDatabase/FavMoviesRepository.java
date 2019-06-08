@@ -8,58 +8,57 @@ import com.vamsi.popularmoviesstage1final.ModelMovieData;
 
 import java.util.List;
 
-public class FavMoviesRepository {
+class FavMoviesRepository {
 
-    private FavMovieDao mFavMovieDao;
-    private LiveData<List<ModelMovieData>> mAllresults;
+    private final FavMovieDao FavMovieDao;
+    private final LiveData<List<ModelMovieData>> AllmovieResults;
 
     FavMoviesRepository(Application application) {
-        FavMovieDatabase db = FavMovieDatabase.getDatabase(application);
-        mFavMovieDao = db.favMoviedao();
-        mAllresults = mFavMovieDao.getlivedataMovies();
+        FavMovieDatabase moviedb = FavMovieDatabase.getDatabase(application);
+        FavMovieDao = moviedb.myfavMoviedao();
+        AllmovieResults = FavMovieDao.getlivedataMovies();
     }
 
 
-    public LiveData<List<ModelMovieData>> getAllResults() {
-        return mAllresults;
+    public LiveData<List<ModelMovieData>> getAllmovieResults() {
+        return AllmovieResults;
     }
 
-    public void insert (ModelMovieData result) {
-        new insertAsyncTask(mFavMovieDao).execute(result);
+    public void insert (ModelMovieData movieResult) {
+        new insertTask(FavMovieDao).execute(movieResult);
     }
-    public void delete (ModelMovieData result) {
-        new deleteAsyncTask(mFavMovieDao).execute(result);
+    public void delete (ModelMovieData movieResult) {
+        new deleteTask(FavMovieDao).execute(movieResult);
     }
     public ModelMovieData checkMovieInDatabase(String id)
     {
-        ModelMovieData result =  mFavMovieDao.checkMovieInDatabase(id);
-        return result;
+        return FavMovieDao.checkMovieInDatabase(id);
     }
-    private static class insertAsyncTask extends AsyncTask<ModelMovieData, Void, Void> {
+    private static class insertTask extends AsyncTask<ModelMovieData, Void, Void> {
 
-        private FavMovieDao mAsyncTaskDao;
+        private final FavMovieDao AsyncTaskDao;
 
-        insertAsyncTask(FavMovieDao dao) {
-            mAsyncTaskDao = dao;
+        insertTask(FavMovieDao dao) {
+            AsyncTaskDao = dao;
         }
 
         @Override
         protected Void doInBackground(final ModelMovieData... params) {
-            mAsyncTaskDao.insert(params[0]);
+            AsyncTaskDao.insert(params[0]);
             return null;
         }
     }
-    private static class deleteAsyncTask extends AsyncTask<ModelMovieData, Void, Void> {
+    private static class deleteTask extends AsyncTask<ModelMovieData, Void, Void> {
 
-        private FavMovieDao mAsyncTaskDao;
+        private final FavMovieDao AsyncTaskDao;
 
-        deleteAsyncTask(FavMovieDao dao) {
-            mAsyncTaskDao = dao;
+        deleteTask(FavMovieDao dao) {
+            AsyncTaskDao = dao;
         }
 
         @Override
         protected Void doInBackground(final ModelMovieData... params) {
-            mAsyncTaskDao.delete(params[0]);
+            AsyncTaskDao.delete(params[0]);
             return null;
         }
     }

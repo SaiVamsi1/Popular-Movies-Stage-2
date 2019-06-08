@@ -13,14 +13,14 @@ import java.util.List;
 
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder>
 {
-    private ArrayList<ReviewData> dataList;
+    private final ArrayList<ReviewData> dataList;
 
     public ReviewAdapter(List<ReviewData> dataList, Context context) {
         this.dataList = (ArrayList<ReviewData>) dataList;
         this.context = context;
     }
 
-    private Context context;
+    private final Context context;
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -43,8 +43,8 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
 
     public class ViewHolder extends RecyclerView.ViewHolder
     {
-        TextView author;
-        TextView content;
+        final TextView author;
+        final TextView content;
         private ViewHolder(View itemView) {
             super(itemView);
             author=itemView.findViewById(R.id.author_tv_id);

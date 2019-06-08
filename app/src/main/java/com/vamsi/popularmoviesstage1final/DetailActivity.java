@@ -9,7 +9,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -18,14 +17,11 @@ import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkError;
-import com.android.volley.NoConnectionError;
 import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.squareup.picasso.Picasso;
@@ -38,29 +34,24 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class DetailActivity extends AppCompatActivity
 {
-    ArrayList<YoutubeData> list = new ArrayList<YoutubeData>();
-    RecyclerView YoutubeRecycler;
-    YoutubeAdapter youtubeAdapter;
+    private final ArrayList<YoutubeData> list = new ArrayList<>();
+    private RecyclerView YoutubeRecycler;
+    private YoutubeAdapter youtubeAdapter;
 
 
-    List<ReviewData> reviewDataList;
-    RecyclerView reviewRecycler;
-    ReviewAdapter reviewAdapter;
-
-    ImageView favimage;
-
-    FavMovieViewModel viewModel;
-    ModelMovieData movie;
-
-    Button fav;
+    private List<ReviewData> reviewDataList;
+    private RecyclerView reviewRecycler;
+    private ReviewAdapter reviewAdapter;
 
 
-    boolean state=false;
+    private FavMovieViewModel viewModel;
+    private ModelMovieData movie;
+
+    private Button fav;
 
 
     @SuppressLint("SetTextI18n")
@@ -69,7 +60,6 @@ public class DetailActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
         reviewDataList=new ArrayList<>();
-        favimage = findViewById(R.id.favicon);
         ButterKnife.bind(this);
         viewModel = ViewModelProviders.of(this).get(FavMovieViewModel.class);
 
@@ -93,9 +83,10 @@ public class DetailActivity extends AppCompatActivity
         TextView ratingTV=findViewById(R.id.movie_rating);
         TextView releasedateTV=findViewById(R.id.movie_release_date);
         TextView overviewTV=findViewById(R.id.movie_overview);
+        setTitle(movie.getOriginalTitle());
 
         Picasso.with(this)
-                .load(movie.getPosterpath())
+                .load("https://image.tmdb.org/t/p/w185"+movie.getPosterpath())
                 .fit()
                 .error(R.drawable.movie_icon)
                 .placeholder(R.drawable.movie_icon)
@@ -107,22 +98,9 @@ public class DetailActivity extends AppCompatActivity
         Youtube(movie.getId());
         reviewfetcher(movie.getId());
         updateButton(movie.getId());
-/*
-        ModelMovieData modelMovieData = viewModel.checkMovieInDatabase(movie.getId());
-        if(modelMovieData!=null){
-            Toast.makeText(this, "MOVIE IS HERE", Toast.LENGTH_SHORT).show();
-            favimage.setImageResource(R.drawable.favadded);
-            state = false;
-        }
-        else
-        {
-            Toast.makeText(this, "THE MOVIE IS NOT YET INSERTED", Toast.LENGTH_SHORT).show();
-            favimage.setImageResource(R.drawable.fav1);
-            state = true;
-        }*/
     }
 
-    public void Youtube(String id)
+    private void Youtube(String id)
     {
         RequestQueue queue=Volley.newRequestQueue(this);
         Uri uri=Uri.parse("http://api.themoviedb.org/3/movie/"+ id + "/videos?&api_key=c52dc26bff4c4ab80ffd0bcf9ac469cf");
@@ -157,64 +135,43 @@ public class DetailActivity extends AppCompatActivity
         queue.add(request);
     }
 
-    public void reviewfetcher(String id) {
+    private void reviewfetcher(String id) {
         RequestQueue queue = Volley.newRequestQueue(this);
         String url = "http://api.themoviedb.org/3/movie/"+ id + "/reviews?api_key=c52dc26bff4c4ab80ffd0bcf9ac469cf";
         StringRequest request = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        try {
-                            JSONObject root = new JSONObject(response);
-                            JSONArray array = root.optJSONArray("results");
-                            if (array.length() == 0) {
-                                Toast.makeText(DetailActivity.this, "There are no Reviews for this movie", Toast.LENGTH_SHORT).show();
-                            }
-                            int len = array.length();
-                            for (int i = 0; i < len; i++) {
-                                JSONObject jsonObject = array.getJSONObject(i);
-                                String author = jsonObject.optString("author");
-                                String comment = jsonObject.optString("content");
-
-                                ReviewData data=new ReviewData(author,comment);
-                                reviewDataList.add(data);
-                                reviewAdapter=new ReviewAdapter(reviewDataList,DetailActivity.this);
-                                reviewRecycler.setAdapter(reviewAdapter);
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                response -> {
+                    try {
+                        JSONObject root = new JSONObject(response);
+                        JSONArray array = root.optJSONArray("results");
+                        if (array.length() == 0) {
+                            Toast.makeText(DetailActivity.this, "There are no Reviews for this movie", Toast.LENGTH_SHORT).show();
                         }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                if (error instanceof NoConnectionError || error instanceof TimeoutError
-                        ||error instanceof AuthFailureError||error instanceof ParseError
-                        ||error instanceof NetworkError||error instanceof ServerError) {
-                    new AlertDialog.Builder(DetailActivity.this)
-                            .setMessage("error")
-                            .show();
-                }
+                        int len = array.length();
+                        for (int i = 0; i < len; i++) {
+                            JSONObject jsonObject = array.getJSONObject(i);
+                            String author = jsonObject.optString("author");
+                            String comment = jsonObject.optString("content");
 
-            }
-        });
+                            ReviewData data=new ReviewData(author,comment);
+                            reviewDataList.add(data);
+                            reviewAdapter=new ReviewAdapter(reviewDataList,DetailActivity.this);
+                            reviewRecycler.setAdapter(reviewAdapter);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }, error -> {
+                    if (error instanceof TimeoutError
+                            || error instanceof AuthFailureError || error instanceof ParseError
+                            || error instanceof NetworkError || error instanceof ServerError) {
+                        new AlertDialog.Builder(DetailActivity.this)
+                                .setMessage("error")
+                                .show();
+                    }
+
+                });
         queue.add(request);
     }
-
-//    private void updateImageView(String id)
-//    {
-//        ModelMovieData r =  viewModel.checkMovieInDatabase(id);
-//        if(r!=null)
-//        {
-//            favimage.setImageResource(R.drawable.fav1);
-//            state = false;
-//        }
-//        else
-//        {
-//            favimage.setImageResource(R.drawable.favadded);
-//            state = true;
-//        }
-//    }
 
     private void updateButton(String id)
     {
@@ -224,23 +181,10 @@ public class DetailActivity extends AppCompatActivity
             fav.setText("UnFav");
         }
         else {
-            fav.setText("fav");
+            fav.setText("Fav");
         }
     }
 
-//    public void change(View view)
-//    {
-//
-//        if (state) {
-//            delete();
-//            favimage.setImageResource(R.drawable.fav1);
-//            state = !state;
-//        } else {
-//            insert();
-//            favimage.setImageResource(R.drawable.favadded);
-//            state = !state;
-//        }
-//    }
 
     public void loadfav(View view)
     {
@@ -259,7 +203,7 @@ public class DetailActivity extends AppCompatActivity
     }
 
 
-    public void insert()  {
+    private void insert()  {
         Intent intent=getIntent();
         movie = (ModelMovieData) intent.getSerializableExtra("movie");
         String name = movie.getOriginalTitle();
@@ -277,12 +221,11 @@ public class DetailActivity extends AppCompatActivity
         movie.setReleaseDate(releasedate);
         movie.setVoters(rating);
         movie.setVoteCount(votecount);
-        Log.e( "test", String.valueOf(movie.getOriginalTitle()));
         viewModel.insert(movie);
-        Toast.makeText(this, "Inserted", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, movie.getOriginalTitle()+" added to Favourites", Toast.LENGTH_SHORT).show();
     }
 
-    public void delete() {
+    private void delete() {
         Intent intent=getIntent();
         movie = (ModelMovieData) intent.getSerializableExtra("movie");
         String name = movie.getOriginalTitle();
@@ -301,10 +244,6 @@ public class DetailActivity extends AppCompatActivity
         movie.setVoters(rating);
         movie.setReleaseDate(releasedate);
         viewModel.delete(movie);
-        Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
-    }
-
-
-    public void change(View view) {
+        Toast.makeText(this, movie.getOriginalTitle()+" deleted from favourites", Toast.LENGTH_SHORT).show();
     }
 }
