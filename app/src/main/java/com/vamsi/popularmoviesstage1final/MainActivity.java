@@ -3,13 +3,14 @@ package com.vamsi.popularmoviesstage1final;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -19,14 +20,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import com.squareup.picasso.Picasso;
 import com.vamsi.popularmoviesstage1final.RoomDatabase.FavMovieViewModel;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -41,36 +39,51 @@ public class MainActivity extends AppCompatActivity {
     private List<ModelMovieData> results;
     private FavMovieViewModel favMovieViewModel;
     private GridLayoutManager gridLayoutManager;
+    String total_json_data = null;
+    SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mainRecyclerView=findViewById(R.id.recycler_view);
-
-
+       sharedPreferences = getSharedPreferences("MyFile",MODE_PRIVATE);
         results=new ArrayList<>();
         gridLayoutManager=new GridLayoutManager(this,2);
         favMovieViewModel= ViewModelProviders.of(this).get(FavMovieViewModel.class);
-
-
-
-        if(amIConnected())
+        RecyclerView.LayoutManager mainLayoutManager;
+        if(getResources().getConfiguration().orientation== Configuration.ORIENTATION_LANDSCAPE)
         {
-            new FetchingData().execute(POPULAR_QUERY);
+            mainLayoutManager =new GridLayoutManager(this,3);
+        }
+        else
+        {
+            mainLayoutManager =new GridLayoutManager(this,2);
+        }
+        mainRecyclerView.setLayoutManager(mainLayoutManager);
+        if(sharedPreferences!=null && sharedPreferences.getBoolean("FAV",false)){
+            openFavorites();
+        }else if(savedInstanceState!=null && savedInstanceState.containsKey("JSON_DATA")){
+            total_json_data = savedInstanceState.getString("JSON_DATA");
+            setDataOnRecyclerView(total_json_data);
+        }else if(amIConnected())
+        {
+            fetchMovies();
         }
         else{
             Toast.makeText(this, "Sorry! There is No Internet Connection", Toast.LENGTH_LONG).show();
             openFavorites();
         }
 
-        RecyclerView.LayoutManager mainLayoutManager;
-        if(getResources().getConfiguration().orientation== Configuration.ORIENTATION_LANDSCAPE)
-        {
-            mainLayoutManager =new GridLayoutManager(this,3);
-        }else
-        mainLayoutManager =new GridLayoutManager(this,2);
-        mainRecyclerView.setLayoutManager(mainLayoutManager);
+
+
+    }
+
+    private void fetchMovies() {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("FAV",false);
+        editor.apply();
+        new FetchingData().execute(POPULAR_QUERY);
     }
 
     private boolean amIConnected()
@@ -94,6 +107,9 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId())
         {
             case R.id.popular_menu:
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("FAV",false);
+                editor.apply();
                 setTitle("Popular Movies");
                 if(amIConnected())
             {
@@ -105,6 +121,9 @@ public class MainActivity extends AppCompatActivity {
 
                 break;
             case R.id.top_rated_menu:
+                SharedPreferences.Editor editortop = sharedPreferences.edit();
+                editortop.putBoolean("FAV",false);
+                editortop.apply();
                 setTitle("Top Rated Movies");
                 if(amIConnected())
                 {
@@ -116,6 +135,9 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             case R.id.favourites:
+                SharedPreferences.Editor editorfav = sharedPreferences.edit();
+                editorfav.putBoolean("FAV",true);
+                editorfav.apply();
                 setTitle("Favourite Movies");
                 openFavorites();
 
@@ -215,11 +237,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    class FetchingData extends AsyncTask<String,Void,ModelMovieData[]>
+    class FetchingData extends AsyncTask<String,Void,String>
     {
 
         @Override
-        protected ModelMovieData[] doInBackground(String... strings)
+        protected String doInBackground(String... strings)
         {
             String movieResults=null;
             try {
@@ -229,17 +251,34 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             try {
-                return moviesDataToArray(movieResults);
-            } catch (JSONException e) {
+                return movieResults;
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return null;
         }
 
-        protected void onPostExecute(ModelMovieData[] movies)
+        protected void onPostExecute(String movies)
         {
+            total_json_data = movies;
+            setDataOnRecyclerView(movies);
+        }
+
+    }
+
+    public void setDataOnRecyclerView(String result){
+        try {
+            ModelMovieData[] movies = moviesDataToArray(result);
             ImageAdapter imageAdapter = new ImageAdapter(getApplicationContext(), movies);
             mainRecyclerView.setAdapter(imageAdapter);
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+
+    }
+    @Override
+    protected void onSaveInstanceState (Bundle outState){
+        super.onSaveInstanceState(outState);
+        outState.putString("JSON_DATA",total_json_data);
     }
 }
